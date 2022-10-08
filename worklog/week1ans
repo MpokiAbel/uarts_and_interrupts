@@ -1,0 +1,4 @@
+The program can be run and compile with both bords :VAP & VPB
+
+The bss section,is the section in memory which is used to allocate memory for uninitalized variable,
+it is reset to zero to prevent any uninitialized varibles to have some other randon value.
