@@ -18,11 +18,11 @@ void _start() {
       // not good for the planet! But until we introduce interrupts,
       // there is nothing you can do about it... except comment out
       // this annoying code ;-)
-      count++;
-      if (count > 100000000) {
-        uart_send_string(UART0, "\n\rZzzz....\n\r");
-        count = 0;
-      }
+      // count++;
+      // if (count > 10000000) {
+      //   uart_send_string(UART0, "\n\rZzzz....\n\r");
+      //   count = 0;
+      // }
     }
     if (c == '\r')
       uart_send(UART0, '\n');
