@@ -34,7 +34,7 @@ QEMU_LOADER=-device loader,file=kernel.elf
 #   attach via a shell, on a the matching port:
 #     $ telnet locahost 4321
 #-------------------------------------------------------------------
-QEMU_SERIAL=-serial mon:stdio
+QEMU_SERIAL=-serial mon:stdio -serial telnet:localhost:4321,server,nowait
 
 #-------------------------------------------------------------------
 # Prefix for the toolchain, like:
@@ -45,7 +45,7 @@ QEMU_SERIAL=-serial mon:stdio
 # Otherwise, put a full path + prefix here, something
 #   TOOLCHAIN=/usr/bin/arm-none-eabi
 #-------------------------------------------------------------------
-TOOLCHAIN=/home/mpoki/Documents/M2_MOSIG/Cloud/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi
+TOOLCHAIN=/home/mpoki/Documents/M2_MOSIG/Cloud/arm-gnu-toolchain/bin/arm-none-eabi
 
 #-------------------------------------------------------------------
 # Compiler, assembler, and linker flags
@@ -57,7 +57,7 @@ LDFLAGS= -g -T kernel.ld
 #-------------------------------------------------------------------
 # Object file list
 #-------------------------------------------------------------------
-OBJS=vector.o reset.o uart.o main.o 
+OBJS=vector.o reset.o uart.o main.o kprintf.o
 
 #-------------------------------------------------------------------
 # Compilation rules
@@ -85,4 +85,3 @@ debug: all
 
 kill:
 	pkill qemu-system-arm
-
