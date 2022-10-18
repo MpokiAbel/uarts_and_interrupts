@@ -80,10 +80,6 @@ void kprintf(const char *fmt, ...)
 
 void kputchar(int c)
 {
-	// if (c == '\r')
-	// {
-	// 	uart_send(UART1, '\n');
-	// }
 	uart_send(UART1, c);
 }
 
