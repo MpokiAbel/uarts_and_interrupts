@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <sys/ioctl.h>
 /*
  * Board constantes such as BARs
  */

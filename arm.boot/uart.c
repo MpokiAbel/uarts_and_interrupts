@@ -37,3 +37,19 @@ void uart_send_string(int uart, const unsigned char *s) {
     s++;
   }
 }
+
+void uart_clear(int uart){
+
+for(int i=0;i<50;i++){
+uart_send(uart,27);
+uart_send(uart,91);
+uart_send(uart,65);
+
+for(int i=0;i<117;i++){
+uart_send(uart,32);
+}
+uart_send(uart,13);
+} 
+uart_send_string(UART0, "\nHello world!");
+uart_send(uart,12);
+}

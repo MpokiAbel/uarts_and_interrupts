@@ -69,14 +69,23 @@ void kprintf(const char *fmt, ...);
 
 int kvprintf(char const *fmt, void (*func)(int), int radix, va_list ap);
 
-void kprintf(const char *fmt, ...) {
-  /* http://www.pagetable.com/?p=298 */
-  va_list ap;
-  va_start(ap, fmt);
-  kvprintf(fmt, kputchar, 10, ap);
-  va_end(ap);
+void kprintf(const char *fmt, ...)
+{
+	/* http://www.pagetable.com/?p=298 */
+	va_list ap;
+	va_start(ap, fmt);
+	kvprintf(fmt, kputchar, 10, ap);
+	va_end(ap);
 }
 
+void kputchar(int c)
+{
+	// if (c == '\r')
+	// {
+	// 	uart_send(UART1, '\n');
+	// }
+	uart_send(UART1, c);
+}
 
 /*==================================================================
  * DO NOT BOTHER READING THE CODE BELOW, UNLESS YOU WANT TO.
@@ -100,12 +109,13 @@ typedef long long quad_t;
 typedef unsigned int size_t;
 typedef int ssize_t;
 
-#define NBBY    8               /* number of bits in a byte */
+#define NBBY 8 /* number of bits in a byte */
 char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-#define hex2ascii(hex)  (hex2ascii_data[hex])
-#define toupper(c)      ((c) - 0x20 * (((c) >= 'a') && ((c) <= 'z')))
+#define hex2ascii(hex) (hex2ascii_data[hex])
+#define toupper(c) ((c)-0x20 * (((c) >= 'a') && ((c) <= 'z')))
 
-static size_t strlen(const char *s) {
+static size_t strlen(const char *s)
+{
 	size_t l = 0;
 	while (*s++)
 		l++;
@@ -115,15 +125,18 @@ static size_t strlen(const char *s) {
 /* Max number conversion buffer length: a u_quad_t in base 2, plus NUL byte. */
 #define MAXNBUF (sizeof(intmax_t) * NBBY + 1)
 
-static int mod(int a, int m) {
+static int mod(int a, int m)
+{
 	while (a >= m)
 		a -= m;
 	return a;
 }
 
-static int div(int a, int m) {
+static int div(int a, int m)
+{
 	int d = 0;
-	while (a >= m) {
+	while (a >= m)
+	{
 		a -= m;
 		d++;
 	}
@@ -137,12 +150,14 @@ static int div(int a, int m) {
  * The buffer pointed to by `nbuf' must have length >= MAXNBUF.
  */
 static char *
-ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper) {
+ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper)
+{
 	char *p, c;
 
 	p = nbuf;
 	*p = '\0';
-	do {
+	do
+	{
 		c = hex2ascii(mod(num, base)); // num % base);
 		*++p = upper ? toupper(c) : c;
 	} while (num = div(num, base)); // (num /= base);
@@ -178,7 +193,8 @@ ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper) {
  *    ("%*D", len, ptr, " " -> XX XX XX XX ...
  */
 int kvprintf(char const *fmt, void (*func)(int), int radix,
-		va_list ap) {
+			 va_list ap)
+{
 
 #define PCHAR(c) (*func)(c)
 
@@ -201,10 +217,12 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 	if (radix < 2 || radix > 36)
 		radix = 10;
 
-	for (;;) {
+	for (;;)
+	{
 		padc = ' ';
 		width = 0;
-		while ((ch = (u_char) *fmt++) != '%' || stop) {
+		while ((ch = (u_char)*fmt++) != '%' || stop)
+		{
 			if (ch == '\0')
 				return (retval);
 			PCHAR(ch);
@@ -224,7 +242,9 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 		jflag = 0;
 		tflag = 0;
 		zflag = 0;
-		reswitch: switch (ch = (u_char) *fmt++) {
+	reswitch:
+		switch (ch = (u_char)*fmt++)
+		{
 		case '.':
 			dot = 1;
 			goto reswitch;
@@ -238,22 +258,26 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 			ladjust = 1;
 			goto reswitch;
 		case '%':
-			PCHAR(ch)
-			;
+			PCHAR(ch);
 			break;
 		case '*':
-			if (!dot) {
+			if (!dot)
+			{
 				width = va_arg(ap, int);
-				if (width < 0) {
+				if (width < 0)
+				{
 					ladjust = !ladjust;
 					width = -width;
 				}
-			} else {
+			}
+			else
+			{
 				dwidth = va_arg(ap, int);
 			}
 			goto reswitch;
 		case '0':
-			if (!dot) {
+			if (!dot)
+			{
 				padc = '0';
 				goto reswitch;
 			}
@@ -266,7 +290,8 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 		case '7':
 		case '8':
 		case '9':
-			for (n = 0;; ++fmt) {
+			for (n = 0;; ++fmt)
+			{
 				n = n * 10 + ch - '0';
 				ch = *fmt;
 				if (ch < '0' || ch > '9')
@@ -278,40 +303,41 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 				width = n;
 			goto reswitch;
 		case 'b':
-			num = (u_int) va_arg(ap, int);
+			num = (u_int)va_arg(ap, int);
 			p = va_arg(ap, char *);
 			for (q = ksprintn(nbuf, num, *p++, NULL, 0); *q;)
-				PCHAR(*q--)
-			;
+				PCHAR(*q--);
 
 			if (num == 0)
 				break;
 
-			for (tmp = 0; *p;) {
+			for (tmp = 0; *p;)
+			{
 				n = *p++;
-				if (num & (1 << (n - 1))) {
+				if (num & (1 << (n - 1)))
+				{
 					PCHAR(tmp ? ',' : '<');
 					for (; (n = *p) > ' '; ++p)
 						PCHAR(n);
 					tmp = 1;
-				} else
+				}
+				else
 					for (; *p > ' '; ++p)
 						continue;
 			}
 			if (tmp)
-				PCHAR('>')
-			;
+				PCHAR('>');
 			break;
 		case 'c':
-			PCHAR(va_arg(ap, int))
-			;
+			PCHAR(va_arg(ap, int));
 			break;
 		case 'D':
 			up = va_arg(ap, u_char *);
 			p = va_arg(ap, char *);
 			if (!width)
 				width = 16;
-			while (width--) {
+			while (width--)
+			{
 				PCHAR(hex2ascii(*up >> 4));
 				PCHAR(hex2ascii(*up & 0x0f));
 				up++;
@@ -326,20 +352,24 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 			sign = 1;
 			goto handle_sign;
 		case 'h':
-			if (hflag) {
+			if (hflag)
+			{
 				hflag = 0;
 				cflag = 1;
-			} else
+			}
+			else
 				hflag = 1;
 			goto reswitch;
 		case 'j':
 			jflag = 1;
 			goto reswitch;
 		case 'l':
-			if (lflag) {
+			if (lflag)
+			{
 				lflag = 0;
 				qflag = 1;
-			} else
+			}
+			else
 				lflag = 1;
 			goto reswitch;
 		case 'n':
@@ -365,7 +395,7 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 			base = 16;
 			sharpflag = (width == 0);
 			sign = 0;
-			num = (uintptr_t) va_arg(ap, void *);
+			num = (uintptr_t)va_arg(ap, void *);
 			goto number;
 		case 'q':
 			qflag = 1;
@@ -389,15 +419,12 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 
 			if (!ladjust && width > 0)
 				while (width--)
-					PCHAR(padc)
-			;
+					PCHAR(padc);
 			while (n--)
-				PCHAR(*p++)
-			;
+				PCHAR(*p++);
 			if (ladjust && width > 0)
 				while (width--)
-					PCHAR(padc)
-			;
+					PCHAR(padc);
 			break;
 		case 't':
 			tflag = 1;
@@ -417,7 +444,8 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 		case 'z':
 			zflag = 1;
 			goto reswitch;
-			handle_nosign: sign = 0;
+		handle_nosign:
+			sign = 0;
 			if (jflag)
 				num = va_arg(ap, uintmax_t);
 			else if (qflag)
@@ -429,13 +457,14 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 			else if (zflag)
 				num = va_arg(ap, size_t);
 			else if (hflag)
-				num = (u_short) va_arg(ap, int);
+				num = (u_short)va_arg(ap, int);
 			else if (cflag)
-				num = (u_char) va_arg(ap, int);
+				num = (u_char)va_arg(ap, int);
 			else
 				num = va_arg(ap, u_int);
 			goto number;
-			handle_sign: if (jflag)
+		handle_sign:
+			if (jflag)
 				num = va_arg(ap, intmax_t);
 			else if (qflag)
 				num = va_arg(ap, quad_t);
@@ -446,17 +475,20 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 			else if (zflag)
 				num = va_arg(ap, ssize_t);
 			else if (hflag)
-				num = (short) va_arg(ap, int);
+				num = (short)va_arg(ap, int);
 			else if (cflag)
-				num = (char) va_arg(ap, int);
+				num = (char)va_arg(ap, int);
 			else
 				num = va_arg(ap, int);
-			number: if (sign && (intmax_t) num < 0) {
+		number:
+			if (sign && (intmax_t)num < 0)
+			{
 				neg = 1;
-				num = -(intmax_t) num;
+				num = -(intmax_t)num;
 			}
 			p = ksprintn(nbuf, num, base, &tmp, upper);
-			if (sharpflag && num != 0) {
+			if (sharpflag && num != 0)
+			{
 				if (base == 8)
 					tmp++;
 				else if (base == 16)
@@ -467,38 +499,36 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 
 			if (!ladjust && padc != '0' && width && (width -= tmp) > 0)
 				while (width--)
-					PCHAR(padc)
-			;
+					PCHAR(padc);
 			if (neg)
-				PCHAR('-')
-			;
-			if (sharpflag && num != 0) {
-				if (base == 8) {
+				PCHAR('-');
+			if (sharpflag && num != 0)
+			{
+				if (base == 8)
+				{
 					PCHAR('0');
-				} else if (base == 16) {
+				}
+				else if (base == 16)
+				{
 					PCHAR('0');
 					PCHAR('x');
 				}
 			}
 			if (!ladjust && width && (width -= tmp) > 0)
 				while (width--)
-					PCHAR(padc)
-			;
+					PCHAR(padc);
 
 			while (*p)
-				PCHAR(*p--)
-			;
+				PCHAR(*p--);
 
 			if (ladjust && width && (width -= tmp) > 0)
 				while (width--)
-					PCHAR(padc)
-			;
+					PCHAR(padc);
 
 			break;
 		default:
 			while (percent < fmt)
-				PCHAR(*percent++)
-			;
+				PCHAR(*percent++);
 			/*
 			 * Since we ignore an formatting argument it is no
 			 * longer safe to obey the remaining formatting
@@ -511,4 +541,3 @@ int kvprintf(char const *fmt, void (*func)(int), int radix,
 	}
 #undef PCHAR
 }
-

@@ -1,20 +1,25 @@
 #include "main.h"
-
+#include "kprintf.c"
 /**
  * This is the C entry point, upcalled once the hardware has been setup properly
  * in assembly language, see the reset.s file.
  */
 
-void _start() {
+void _start()
+{
   int i = 0;
   int count = 0;
-  uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
-  uart_send_string(UART0, "\nHello world!\n");
-  unsigned char s ='a'; 
+  
+  // uart_clear(UART0);
+  // uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
+  // uart_send_string(UART0, "\nHello world!\n");
+  unsigned char s = 'a';
 
-  while (1) {
+  while (1)
+  {
     unsigned char c;
-    while (0 == uart_receive(UART0, &c)) {
+    while (0 == uart_receive(UART0, &c))
+    {
       // friendly reminder that you are polling and therefore spinning...
       // not good for the planet! But until we introduce interrupts,
       // there is nothing you can do about it... except comment out
@@ -25,13 +30,12 @@ void _start() {
       //   count = 0;
       // }
     }
-    if (c == '\r'){
-      uart_send(UART1, '\n');
+    if (c == '\r')
+    {
       uart_send(UART0, '\n');
     }
-      
-    uart_send(UART1, c);
     uart_send(UART0, c);
-    kprintf(c);
+
+    kprintf("%x", c);
   }
 }

@@ -57,7 +57,7 @@ LDFLAGS= -g -T kernel.ld
 #-------------------------------------------------------------------
 # Object file list
 #-------------------------------------------------------------------
-OBJS=vector.o reset.o uart.o main.o kprintf.o
+OBJS=vector.o reset.o uart.o main.o 
 
 #-------------------------------------------------------------------
 # Compilation rules
