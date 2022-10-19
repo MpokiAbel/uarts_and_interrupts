@@ -56,9 +56,6 @@ void uart_clear(int uart)
   //Move the cursor to top
     uart_send(uart, 27);
     uart_send(uart, 91);
-    uart_send(uart,48);
-    uart_send(uart,59);
-    uart_send(uart,48);
     uart_send(uart, 72);
 
 }

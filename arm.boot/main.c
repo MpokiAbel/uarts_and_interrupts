@@ -1,31 +1,119 @@
 #include "main.h"
 #include "kprintf.c"
 
+char command[255];
+int cursor;
+
+void cursor_pos(int uart)
+{
+
+  int temp = cursor + 1;
+  int temp2 = cursor + 1;
+  int count = 0;
+
+  
+  while (temp > 0)
+  {
+    temp = temp / 10;
+    count++;
+  }
+  // count -= 1;
+  int array[count];
+  int i = 1;
+  while (temp2 > 0)
+  {
+    array[count - i] = temp2 % 10;
+    temp2 = temp2 / 10;
+    i++;
+  }
+
+  for (int i = 0; i < count; i++)
+  {
+    uart_send(uart, 48 + array[i]);
+    kprintf("%d", array[i]);
+    
+  }
+}
 
 void uart_commandline(unsigned char *s, int uart)
 {
-  if (uart == UART0)
+  int options = *s;
+  
+  switch (options)
   {
-    switch (*s)
+  case 27:
+    uart_receive(UART0, s);
+    if (*s == 91)
     {
-    case 27:
-      break;
-    case 1:
-      uart_send_string(UART0, "\nArrows\n");
-      break;
+      uart_receive(UART0, s);
+      if (*s == 65) // UP arrow
+      {
+        // uart_send_string(UART1, " --arrows UP\n");
+      }
 
-    case 127: //Backspace key
-    uart_send(uart, 8); //Backspace
-    uart_send(uart, 32); //Put space
-    uart_send(uart, 8); //Backspace
-      break;
+      else if (*s == 66)
+      {
+        // uart_send_string(UART1, "\nDOWN\n");
+      }
 
-    case 3: //Delete key
-      uart_send(uart, 32);
-      break;
-    default:
-      break;
+      else if (*s == 67) // RIGHT ARROW
+      {
+        if (cursor == 0)
+        {
+          uart_send(uart, 27);
+          uart_send(uart, 91);
+          uart_send(uart, 68);
+        }
+        else if (cursor > 0)
+        {
+
+          uart_send(uart, 27);
+          uart_send(uart, 91);
+          cursor_pos(uart);
+          
+          uart_send(uart, 71);
+        }
+      }
+
+      if (*s == 68 && cursor > 0) // BACK ARROW
+      {
+        uart_send(uart, 8); // Backspace key
+      }
+      if (*s == 51)
+      {
+        uart_receive(UART0, s);
+        if (*s == 126) // Delete key
+        {
+          // uart_send_string(UART1, "\nDELETE\n");
+        }
+      }
     }
+    break;
+
+  case 127:             // Backspace key
+    uart_send(uart, 8); // Backspace
+
+    uart_send(uart, 27);
+    uart_send(uart, 91);
+    uart_send(uart, 75);
+
+    //    uart_send(uart, 8); //Backspace
+    cursor--;
+    break;
+
+  default:
+   
+    command[cursor] = *s;
+
+    if (command[cursor] == '\r')
+    {
+      uart_send(UART0, '\n');
+    }
+    uart_send(UART0, command[cursor]);
+
+    cursor++;
+
+    break;
   }
 }
 
@@ -38,9 +126,11 @@ void _start()
 {
   int i = 0;
   int count = 0;
+  cursor = 0;
+
   uart_clear(UART0);
-  // uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
-  // uart_send_string(UART0, "\nHello world!\n");
+  uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
+  uart_send_string(UART0, "\nHello world!\n");
   unsigned char s = 'a';
 
   while (1)
@@ -58,18 +148,8 @@ void _start()
       //   count = 0;
       // }
     }
-    
-    if (c == '\r')
-    {
-      uart_send(UART0, '\n');
-    }
-    uart_send(UART0, c);
 
     // kprintf("%d", c);
-    uart_commandline(&c,UART0);
-
-    
-    
+    uart_commandline(&c, UART0);
   }
 }
-
