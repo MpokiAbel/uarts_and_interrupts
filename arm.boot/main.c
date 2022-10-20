@@ -1,11 +1,77 @@
 #include "main.h"
 #include "kprintf.c"
+#include <string.h>
 
 unsigned char command[255];
 int commandLength;
 int commandCursor;
 int escapeSeq[2];
 
+int stringCompare(char a[], char b[])
+{
+  int flag = 0, i = 0;
+  while (a[i] != '\0' && b[i] != '\0')
+  {
+    if (a[i] != b[i])
+    {
+      flag = 1;
+      break;
+    }
+    i++;
+  }
+  if (flag == 0)
+    return 0;
+  else
+    return 1;
+}
+
+void stringParse(int start, unsigned char *cmd, int *endIndex)
+{
+  int i = start;
+  kprintf("%d", i);
+  while (i < commandLength)
+  {
+    if (command[i] == ' ')
+    {
+      *(cmd + i) = '\0';
+      *endIndex = i + 1;
+      break;
+    }
+    *(cmd + (i - start)) = command[i];
+
+    i++;
+  }
+}
+
+void commandExecution(int uart)
+{
+  unsigned char parsedString[commandLength];
+  int *index;
+
+  stringParse(0, parsedString, index);
+
+  if (stringCompare(parsedString, "reset") == 0)
+  {
+    uart_clear(uart);
+  }
+  else if (stringCompare(parsedString, "echo") == 0)
+  {
+    stringParse(*index, parsedString, index);
+    uart_send(uart, '\n');
+    uart_send_string(uart, parsedString);
+    uart_send(uart, '\n');
+  }
+  else
+  {
+    unsigned char temp[] = ": command not found\n";
+    uart_send(uart, '\n');
+    uart_send_string(uart, command);
+    uart_send_string(uart, temp);
+  }
+  // store the command here
+  commandCursor = 0;
+  commandLength = 0;
+}
 void commandLength_pos(int uart, int length)
 {
 
@@ -110,7 +176,7 @@ void uart_commandline(unsigned char *s, int uart)
         uart_send(UART0, 91);
         uart_send(UART0, 71);
 
-        //Erase Everything
+        // Erase Everything
         uart_send(UART0, 27);
         uart_send(UART0, 91);
         uart_send(UART0, 75);
@@ -194,6 +260,10 @@ void uart_commandline(unsigned char *s, int uart)
 
     kprintf("%d,%d", commandCursor, commandLength);
   }
+  else if (options == 13)
+  {
+    commandExecution(uart);
+  }
   else if (commandLength == commandCursor)
   {
 
@@ -205,6 +275,7 @@ void uart_commandline(unsigned char *s, int uart)
     uart_send(uart, command[commandLength]);
     commandLength++;
     commandCursor++;
+    command[commandLength] = '\0';
   }
   else if (commandLength > commandCursor)
   {
@@ -252,7 +323,7 @@ void _start()
   int count = 0;
   commandLength = 0;
   commandCursor = 0;
-  uart_clear(UART0);
+  // uart_clear(UART0);
   uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
   uart_send_string(UART0, "\nHello world!\n");
   unsigned char s = 'a';
