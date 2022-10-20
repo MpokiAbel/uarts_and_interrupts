@@ -6,6 +6,9 @@ unsigned char command[255];
 int commandLength;
 int commandCursor;
 int escapeSeq[2];
+unsigned char commandHistory[20][255];
+int historyCounter;
+int historyFull;
 
 int stringCompare(char a[], char b[])
 {
@@ -69,6 +72,37 @@ void commandExecution(int uart)
     uart_send_string(uart, temp);
   }
   // store the command here
+
+  // if (historyCounter < 20)
+  // {
+  //   for (int i = 0; i < commandLength; i++)
+  //   {
+  //     commandHistory[historyCounter][i] = command[i];
+  //   }
+  //   commandHistory[historyCounter][commandLength] = '\0';
+  //   historyCounter++;
+  // }
+  // else
+  // {
+  //   int i = 18;
+  //   while (i > 0)
+  //   {
+  //     int j = 0;
+  //     while (commandHistory[i][j] != '\0')
+  //     {
+  //       commandHistory[i + 1][j] = commandHistory[i][j];
+  //       j++;
+  //     }
+  //     commandHistory[i + 1][j] = '\0';
+  //     i--;
+  //   }
+  //   for (int i = 0; i < commandLength; i++)
+  //   {
+  //     commandHistory[0][i] = command[i];
+  //   }
+  //   commandHistory[0][i] = '\0';
+  // }
+
   commandCursor = 0;
   commandLength = 0;
 }
@@ -100,7 +134,50 @@ void commandLength_pos(int uart, int length)
   }
 }
 
-void uart_commandline(unsigned char *s, int uart)
+void moveCursorBeginErase(int uart)
+{
+  uart_send(uart, 27);
+  uart_send(uart, 91);
+  uart_send(uart, 71);
+
+  // Erase Everything
+  uart_send(uart, 27);
+  uart_send(uart, 91);
+  uart_send(uart, 75);
+}
+
+void takeHistory(int uart, int pos)
+{
+  int i = 0;
+  moveCursorBeginErase(uart);
+  while (commandHistory[pos][i] != '\0')
+  {
+    command[i] = commandHistory[pos][i];
+    uart_send(uart, command[i]);
+    i++;
+  }
+  command[i] = '\0';
+  commandCursor = i;
+  commandLength = i;
+}
+
+void moveCursor(int pos)
+{
+  // Move cursor to the required position
+  uart_send(UART0, 27);
+  uart_send(UART0, 91);
+  uart_send(UART0, 49 + pos);
+  uart_send(UART0, 71);
+}
+
+void moveCursorBegin()
+{
+  uart_send(UART0, 27);
+  uart_send(UART0, 91);
+  uart_send(UART0, 71);
+}
+
+void uart_commandline(unsigned char *s, int uart, int *UpDownMove)
 {
   int options = *s;
   if (escapeSeq[0] == 1 && escapeSeq[1] == 1)
@@ -108,12 +185,24 @@ void uart_commandline(unsigned char *s, int uart)
     // Read the other value
     switch (options)
     {
-    case 65:
-      /* code */
-      break;
-    case 66:
-      /* code */
-      break;
+      // case 65: // Up Arrow
+      //   *UpDownMove++;
+      //   if (*UpDownMove < 20)
+      //   {
+      //     takeHistory(uart, *UpDownMove);
+      //   }
+      //   else
+      //     *UpDownMove = 19;
+      //   break;
+      // case 66: // Down Arrow
+      //   *UpDownMove--;
+      //   if (*UpDownMove > -1)
+      //   {
+      //     takeHistory(uart, *UpDownMove);
+      //   }
+      //   else
+      //     *UpDownMove = -1;
+      //   break;
 
     case 67:                  // Right Arrow
       if (commandLength == 0) // if there is no command typed dont go right
@@ -171,24 +260,13 @@ void uart_commandline(unsigned char *s, int uart)
         commandLength--;
         command[commandLength] = '\0';
 
-        // Move Cursor to the beginning of a live
-        uart_send(UART0, 27);
-        uart_send(UART0, 91);
-        uart_send(UART0, 71);
-
-        // Erase Everything
-        uart_send(UART0, 27);
-        uart_send(UART0, 91);
-        uart_send(UART0, 75);
+        moveCursorBeginErase(uart);
 
         // Print the command
         uart_send_string(UART0, command);
 
         // Move cursor to the required position
-        uart_send(UART0, 27);
-        uart_send(UART0, 91);
-        uart_send(UART0, 49 + commandCursor);
-        uart_send(UART0, 71);
+        moveCursor(commandCursor);
       }
       break;
     }
@@ -218,6 +296,7 @@ void uart_commandline(unsigned char *s, int uart)
     uart_send(UART1, 91);
     uart_send(UART1, 49);
     uart_send(UART1, 71);
+
     if (commandCursor < commandLength)
     {
       unsigned char tempArray[commandLength - commandCursor];
@@ -235,18 +314,13 @@ void uart_commandline(unsigned char *s, int uart)
       command[commandLength] = '\0';
 
       // Move Cursor to the beginning of a live
-      uart_send(UART0, 27);
-      uart_send(UART0, 91);
-      uart_send(UART0, 71);
+      moveCursorBegin();
 
       // Print the command
       uart_send_string(UART0, command);
 
       // Move cursor to the required position
-      uart_send(UART0, 27);
-      uart_send(UART0, 91);
-      uart_send(UART0, 49 + commandCursor);
-      uart_send(UART0, 71);
+      moveCursor(commandCursor);
 
       commandLength++;
       commandCursor++;
@@ -257,8 +331,6 @@ void uart_commandline(unsigned char *s, int uart)
       commandLength--;
       commandCursor--;
     }
-
-    kprintf("%d,%d", commandCursor, commandLength);
   }
   else if (options == 13)
   {
@@ -297,18 +369,13 @@ void uart_commandline(unsigned char *s, int uart)
     command[commandLength] = '\0';
 
     // Move Cursor to the beginning of a live
-    uart_send(UART0, 27);
-    uart_send(UART0, 91);
-    uart_send(UART0, 71);
+    moveCursorBegin();
 
     // Print the command
     uart_send_string(UART0, command);
 
     // Move cursor to the required position
-    uart_send(UART0, 27);
-    uart_send(UART0, 91);
-    uart_send(UART0, 49 + commandCursor);
-    uart_send(UART0, 71);
+    moveCursor(commandCursor);
   }
 }
 
@@ -323,6 +390,10 @@ void _start()
   int count = 0;
   commandLength = 0;
   commandCursor = 0;
+  historyCounter = 0;
+  historyFull = 0;
+  int *UpDownMove;
+  *UpDownMove = -1;
   // uart_clear(UART0);
   uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
   uart_send_string(UART0, "\nHello world!\n");
@@ -343,6 +414,6 @@ void _start()
       //   count = 0;
       // }
     }
-    uart_commandline(&c, UART0);
+    uart_commandline(&c, UART0, UpDownMove);
   }
 }
