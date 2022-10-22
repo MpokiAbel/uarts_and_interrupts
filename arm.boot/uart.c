@@ -1,7 +1,5 @@
 #include "main.h"
 
-
-
 /**
  * Receive a character from the given uart, this is a non-blocking call.
  * Returns 0 if there are no character available.
@@ -14,7 +12,7 @@ int uart_receive(int uart, unsigned char *s)
   if (*uart_fr & UART_RXFE)
     return 0;
   *s = (*uart_dr & 0xff);
-  
+
   return 1;
 }
 
@@ -47,15 +45,14 @@ void uart_send_string(int uart, const unsigned char *s)
 
 void uart_clear(int uart)
 {
-  //Clear screen
-    uart_send(uart, 27);
-    uart_send(uart, 91);
-    uart_send(uart,49);
-    uart_send(uart, 74);
+  // Clear screen
+  uart_send(uart, 27);
+  uart_send(uart, 91);
+  uart_send(uart, 49);
+  uart_send(uart, 74);
 
-  //Move the cursor to top
-    uart_send(uart, 27);
-    uart_send(uart, 91);
-    uart_send(uart, 72);
-
+  // Move the cursor to top
+  uart_send(uart, 27);
+  uart_send(uart, 91);
+  uart_send(uart, 72);
 }
