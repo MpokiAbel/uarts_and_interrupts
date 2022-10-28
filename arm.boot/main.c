@@ -117,16 +117,16 @@ void commandExecution(int uart, int *commandLength, int *commandCursor,
   }
   else
     uart_send(uart, '\n');
-    uart_send(uart,'>');
+  uart_send(uart, '>');
 
   *commandCursor = 0;
   *commandLength = 0;
 }
-void *commandLength_pos(int uart, int length)
+void *commandLength_pos(int uart, int pos)
 {
 
-  int temp = length + 1;
-  int temp2 = length + 1;
+  int temp = pos + 2;
+  int temp2 = pos + 2;
   int count = 0;
 
   while (temp > 0)
@@ -146,7 +146,7 @@ void *commandLength_pos(int uart, int length)
   for (int i = 0; i < count; i++)
   {
     uart_send(uart, 48 + array[i]);
-    kprintf("%d", array[i]);
+    kprintf("%d ---", array[i]);
   }
 }
 
@@ -183,7 +183,13 @@ void moveCursor(int pos)
   // Move cursor to the required position
   uart_send(UART0, 27);
   uart_send(UART0, 91);
-  uart_send(UART0, 50 + pos);
+  if (pos > 9)
+  {
+    kprintf("%d, ", pos);
+    commandLength_pos(UART0, pos);
+  }
+  else
+    uart_send(UART0, 50 + pos);
   uart_send(UART0, 71);
 }
 
@@ -260,12 +266,16 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
       if (*commandCursor < *commandLength)
       {
 
-        unsigned char tempArray[(*commandLength) - (*commandCursor)];
-        for (int i = 0; i < (*commandLength) - (*commandCursor); i++)
+        int tempLegth = (*commandLength) - (*commandCursor) - 1;
+        unsigned char tempArray[tempLegth];
+
+        // kprintf("%d,%d,%d--- ", *commandCursor, *commandLength, tempLegth);
+
+        for (int i = 0; i < tempLegth; i++)
         {
           tempArray[i] = *(command + (*commandCursor) + i + 1);
         }
-
+        tempArray[tempLegth] = '\0';
         for (int j = *commandCursor; j < *commandLength - 1; j++)
         {
           *(command + j) = tempArray[j - *commandCursor];
@@ -273,10 +283,13 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
         (*commandLength)--;
         *(command + *commandLength) = '\0';
 
-        moveCursorBeginErase(uart);
+        // moveCursorBeginErase(uart);
+        uart_send(uart, 27);
+        uart_send(uart, 91);
+        uart_send(uart, 75);
 
         // Print the command
-        uart_send_string(UART0, command);
+        uart_send_string(UART0, tempArray);
 
         // Move cursor to the required position
         moveCursor(*commandCursor);
