@@ -2,7 +2,7 @@
 # Machine options:
 #   QEMU_MACHINE=versatileab
 #   QEMU_MACHINE=versatilepb
-QEMU_MACHINE=versatileab
+QEMU_MACHINE=versatilepb
 
 ifeq ($(QEMU_MACHINE),versatileab) 
   QEMU_CPU=arm926
@@ -57,7 +57,7 @@ LDFLAGS= -g -T kernel.ld
 #-------------------------------------------------------------------
 # Object file list
 #-------------------------------------------------------------------
-OBJS=vector.o reset.o uart.o main.o 
+OBJS=vector.o reset.o uart.o main.o vic.o cb.o irqs.o
 
 #-------------------------------------------------------------------
 # Compilation rules

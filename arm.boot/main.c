@@ -439,7 +439,7 @@ void _start()
   while (1)
   {
     unsigned char c;
-    while (0 == uart_receive(UART0, &c))
+    while (1 == uart_receive(UART0, &c))
     {
       // friendly reminder that you are polling and therefore spinning...
       // not good for the planet! But until we introduce interrupts,
@@ -450,8 +450,14 @@ void _start()
       //   uart_send_string(UART0, "\n\rZzzz....\n\r");
       //   count = 0;
       // }
-    }
+      uart_commandline(&c, UART0, UpDownMove,
+                     commandLength, commandCursor, historyCounter,
+                     historyFull, escapeSeq, command);
 
-    uart_commandline(&c, UART0, UpDownMove, commandLength, commandCursor, historyCounter, historyFull, escapeSeq, command);
+    kprintf("%x, %d \n \r", c, c);
+    }
+    
+
+    wfi();
   }
 }

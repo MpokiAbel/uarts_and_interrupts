@@ -34,6 +34,13 @@ SECTIONS
    _bss_end = .;
  } 
  
+ /*
+ * Reserve some memory for the irq stack 
+ */
+   . = ALIGN(8);
+  . = . + 0x1000; /* 4kB of stack memory */
+  irq_stack_top = .;
+
  /* 
   * Finally, reserve some memory for the C stack. By default,
   * on the ARM cores used in the Versatile AB and PB,  

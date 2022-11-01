@@ -149,5 +149,8 @@
  */
 #define UART_MIS_RTMIS (1<<6)
 
+#include "vic.h"
+#include "cb.h"
+
 
 #endif /* UART_IRQS_H_ */
