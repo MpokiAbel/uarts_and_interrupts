@@ -1,6 +1,10 @@
 #ifndef UART_H_
 #define UART_H_
 
+#include "vic.h"
+#include "cb.h"
+#include "uart-irqs.h"
+
 /**
  * PL011_T UART
  *     http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183f/DDI0183.pdf
@@ -51,5 +55,7 @@ void uart_send(int uart, unsigned char s);
 void uart_send_string(int uart, const unsigned char *s);
 
 void uart_clear(int uart);
+
+
 
 #endif /* UART_H_ */

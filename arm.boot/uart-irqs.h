@@ -28,17 +28,17 @@
  */
 #define UART_ICR 0x44
 
-#define UART_ICR_OEIC (1<<10)
-#define UART_ICR_BEIC (1<<9)
-#define UART_ICR_PEIC (1<<8)
-#define UART_ICR_FEIC (1<<7)
-#define UART_ICR_RTIC (1<<6)
-#define UART_ICR_TXIC (1<<5)
-#define UART_ICR_RXIC (1<<4)
-#define UART_ICR_DSRMIC (1<<3)
-#define UART_ICR_DCDMIC (1<<2)
-#define UART_ICR_CTSMIC (1<<1)
-#define UART_ICR_RIMIC (1<<0)
+#define UART_ICR_OEIC (1 << 10)
+#define UART_ICR_BEIC (1 << 9)
+#define UART_ICR_PEIC (1 << 8)
+#define UART_ICR_FEIC (1 << 7)
+#define UART_ICR_RTIC (1 << 6)
+#define UART_ICR_TXIC (1 << 5)
+#define UART_ICR_RXIC (1 << 4)
+#define UART_ICR_DSRMIC (1 << 3)
+#define UART_ICR_DCDMIC (1 << 2)
+#define UART_ICR_CTSMIC (1 << 1)
+#define UART_ICR_RIMIC (1 << 0)
 
 /*
  * PrimeCell UART (PL011) Technical Reference Manual
@@ -52,18 +52,18 @@
  */
 #define CUARTLCR_H 0x02C
 
-#define CUARTLCR_H_SPS (1<<7) // Stick parity select.
-#define CUARTLCR_H_WLEN8 (0x03<<5)  // Word length.
-#define CUARTLCR_H_WLEN7 (0x02<<5)  // Word length.
-#define CUARTLCR_H_WLEN6 (0x01<<5)  // Word length.
-#define CUARTLCR_H_WLEN5 (0x00<<5)  // Word length.
+#define CUARTLCR_H_SPS (1 << 7)      // Stick parity select.
+#define CUARTLCR_H_WLEN8 (0x03 << 5) // Word length.
+#define CUARTLCR_H_WLEN7 (0x02 << 5) // Word length.
+#define CUARTLCR_H_WLEN6 (0x01 << 5) // Word length.
+#define CUARTLCR_H_WLEN5 (0x00 << 5) // Word length.
 
-#define CUARTLCR_H_FEN (1<<4)  // Enable FIFOs: 0 = FIFOs are disabled
+#define CUARTLCR_H_FEN (1 << 4) // Enable FIFOs: 0 = FIFOs are disabled
 
-#define CUARTLCR_H_STP2 (1<<3)  // Two stop bits select
-#define CUARTLCR_H_EPS (1<<2)  // Even parity select, 0 = odd parity.
-#define CUARTLCR_H_PEN (1<<1)  // Parity Enable, 0 = parity is disabled.
-#define CUARTLCR_H_BRK (1<<0)  // Send break.
+#define CUARTLCR_H_STP2 (1 << 3) // Two stop bits select
+#define CUARTLCR_H_EPS (1 << 2)  // Even parity select, 0 = odd parity.
+#define CUARTLCR_H_PEN (1 << 1)  // Parity Enable, 0 = parity is disabled.
+#define CUARTLCR_H_BRK (1 << 0)  // Send break.
 
 /*
  * Page 63 - Section 3.3.10
@@ -89,7 +89,7 @@
  *     HIGH. The receive interrupt is cleared by performing a single read of
  *     the receive FIFO, or by clearing the interrupt
  */
-#define UART_IMSC_RXIM (1<<4)
+#define UART_IMSC_RXIM (1 << 4)
 
 /*
  * Tx interrupt mask
@@ -114,7 +114,7 @@
  *   The interrupt is only set, after written data leaves the single location
  *   of the transmit FIFO and it becomes empty
  */
-#define UART_IMSC_TXIM (1<<5)
+#define UART_IMSC_TXIM (1 << 5)
 
 /*
  * Received timeout mask
@@ -125,7 +125,7 @@
  * all the data or by clearing the interrupt in the Interrupt Clear Register,
  * UARTICR on page 3-21.
  */
-#define UART_IMSC_RTIM (1<<6)
+#define UART_IMSC_RTIM (1 << 6)
 
 /*
  * The UARTMIS Register is the masked interrupt status register.
@@ -137,20 +137,16 @@
  * Receive masked interrupt status.
  * Returns the masked interrupt state of the UARTRXINTR interrupt
  */
-#define UART_MIS_RXMIS (1<<4)
+#define UART_MIS_RXMIS (1 << 4)
 /*
  * Transmit masked interrupt status.
  * Returns the masked interrupt state of the UARTTXINTR interrupt.
  */
-#define UART_MIS_TXMIS (1<<5)
+#define UART_MIS_TXMIS (1 << 5)
 /*
  * Receive timeout masked interrupt status.
  * Returns the masked interrupt state of the UARTRTINTR interrupt.
  */
-#define UART_MIS_RTMIS (1<<6)
-
-#include "vic.h"
-#include "cb.h"
-
+#define UART_MIS_RTMIS (1 << 6)
 
 #endif /* UART_IRQS_H_ */
