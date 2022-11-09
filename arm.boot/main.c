@@ -415,6 +415,8 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
 
 void _start()
 {
+
+  uart_init();
   int a = 0, b = 0, c = 0, d = 0, e = 0;
   int count = 0;
   int *commandLength;
@@ -451,12 +453,11 @@ void _start()
       //   count = 0;
       // }
       uart_commandline(&c, UART0, UpDownMove,
-                     commandLength, commandCursor, historyCounter,
-                     historyFull, escapeSeq, command);
+                       commandLength, commandCursor, historyCounter,
+                       historyFull, escapeSeq, command);
 
-    kprintf("%x, %d \n \r", c, c);
+      kprintf("%x, %d \n \r", c, c);
     }
-    
 
     wfi();
   }

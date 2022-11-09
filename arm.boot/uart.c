@@ -83,13 +83,24 @@ void uart_send_string(int uart, const unsigned char *s)
   }
 }
 
-void uart_init(int uart)
+void uart_init()
 {
-  uint16_t lcr = *(uint16_t *)(uart + CUARTLCR_H);
+  // Enable FIFO queues, both rx-queue and tx-queue.
+  uint16_t lcr = *(uint16_t *)(UART0 + CUARTLCR_H);
   lcr |= CUARTLCR_H_FEN;
-  *(uint16_t *)(uart + CUARTLCR_H) = lcr;
+  *(uint16_t *)(UART0 + CUARTLCR_H) = lcr;
 
-  vic_setup();
+  uint16_t lcr = *(uint16_t *)(UART1 + CUARTLCR_H);
+  lcr |= CUARTLCR_H_FEN;
+  *(uint16_t *)(UART1 + CUARTLCR_H) = lcr;
+
+  uint16_t lcr = *(uint16_t *)(UART2 + CUARTLCR_H);
+  lcr |= CUARTLCR_H_FEN;
+  *(uint16_t *)(UART2 + CUARTLCR_H) = lcr;
+
+  uint16_t lcr = *(uint16_t *)(UART3 + CUARTLCR_H);
+  lcr |= CUARTLCR_H_FEN;
+  *(uint16_t *)(UART3 + CUARTLCR_H) = lcr;
 
   cb_init(&rxcb0);
   cb_init(&txcb0);
@@ -99,6 +110,19 @@ void uart_init(int uart)
   cb_init(&txcb2);
   cb_init(&rxcb3);
   cb_init(&txcb3);
+
+  vic_setup();
+  vic_enable();
+}
+
+void rx_handler()
+{
+  //fill with the available bytes from the RX FIFO. 
+}
+void tx_handler()
+{
+  //that the handler of the TX interrupt 
+  //will empty, writing the bytes to the TX FIFO, when there is room to do so.
 }
 
 void uart_clear(int uart)

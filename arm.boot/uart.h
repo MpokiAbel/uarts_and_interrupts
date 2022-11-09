@@ -56,6 +56,7 @@ void uart_send_string(int uart, const unsigned char *s);
 
 void uart_clear(int uart);
 
+void uart_init();
 
 
 #endif /* UART_H_ */
