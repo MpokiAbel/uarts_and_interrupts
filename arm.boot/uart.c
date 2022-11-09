@@ -1,7 +1,8 @@
 #include "main.h"
 #include "uart.h"
 
-struct cb rxcb0, txcb0, rxcb1, txcb1, rxcb2, txcb2, rxcb3, txcb3;
+struct cb rxcb[UART_COUNT];
+struct cb txcb[UART_COUNT];
 
 /**
  * Receive a character from the given uart, this is a non-blocking call.
@@ -83,33 +84,79 @@ void uart_send_string(int uart, const unsigned char *s)
   }
 }
 
+int uart_get_bar(int uart_id)
+{
+  switch (uart_id)
+  {
+  case 0:
+    return UART0;
+    break;
+  case 1:
+    return UART1;
+    break;
+  case 2:
+    return UART2;
+    break;
+  // case 3:
+  //   return UART3;
+  //   break;
+  default:
+    return -1;
+    break;
+  }
+}
+
+int uart_get_IRQ_rn(int uart_id)
+{
+  switch (uart_id)
+  {
+  case 0:
+    return UART0_IRQ;
+    break;
+  case 1:
+    return UART1_IRQ;
+    break;
+  case 2:
+    return UART2_IRQ;
+    break;
+  // case 3:
+  //   return UART3_IRQ;
+  //   break;
+  default:
+    return -1;
+    break;
+  }
+}
+
+void handler()
+{
+}
+
 void uart_init()
 {
   // Enable FIFO queues, both rx-queue and tx-queue.
-  uint16_t lcr = *(uint16_t *)(UART0 + CUARTLCR_H);
-  lcr |= CUARTLCR_H_FEN;
-  *(uint16_t *)(UART0 + CUARTLCR_H) = lcr;
 
-  uint16_t lcr = *(uint16_t *)(UART1 + CUARTLCR_H);
-  lcr |= CUARTLCR_H_FEN;
-  *(uint16_t *)(UART1 + CUARTLCR_H) = lcr;
+  for (int uart_id = 0; uart_id < UART_COUNT; uart_id++)
+  {
+    int uart_bar = uart_get_bar(uart_id);
 
-  uint16_t lcr = *(uint16_t *)(UART2 + CUARTLCR_H);
-  lcr |= CUARTLCR_H_FEN;
-  *(uint16_t *)(UART2 + CUARTLCR_H) = lcr;
+    uint16_t lcr = *(uint16_t *)(uart_bar + CUARTLCR_H);
+    lcr |= CUARTLCR_H_FEN;
+    *(uint16_t *)(uart_bar + CUARTLCR_H) = lcr;
 
-  uint16_t lcr = *(uint16_t *)(UART3 + CUARTLCR_H);
-  lcr |= CUARTLCR_H_FEN;
-  *(uint16_t *)(UART3 + CUARTLCR_H) = lcr;
+    cb_init(&rxcb[uart_id]);
+    cb_init(&txcb[uart_id]);
 
-  cb_init(&rxcb0);
-  cb_init(&txcb0);
-  cb_init(&rxcb1);
-  cb_init(&txcb1);
-  cb_init(&rxcb2);
-  cb_init(&txcb2);
-  cb_init(&rxcb3);
-  cb_init(&txcb3);
+    // set the Interrupt Mask Set/Clear Register to 1 to allow interrupt
+    uint16_t imsc = *(uint16_t *)(uart_bar + UART_IMSC);
+    imsc = imsc | UART_IMSC_RXIM | UART_IMSC_TXIM | UART_IMSC_RTIM;
+    *(uint16_t *)(uart_bar + UART_IMSC) = imsc;
+
+    // Provide the handler for the interrupt
+    int irq_rn = uart_get_IRQ_rn(uart_id);
+    vic_irq_enable(irq_rn, handler, (void *)uart_id);
+    
+    }
 
   vic_setup();
   vic_enable();
@@ -117,12 +164,12 @@ void uart_init()
 
 void rx_handler()
 {
-  //fill with the available bytes from the RX FIFO. 
+  // fill with the available bytes from the RX FIFO.
 }
 void tx_handler()
 {
-  //that the handler of the TX interrupt 
-  //will empty, writing the bytes to the TX FIFO, when there is room to do so.
+  // that the handler of the TX interrupt
+  // will empty, writing the bytes to the TX FIFO, when there is room to do so.
 }
 
 void uart_clear(int uart)

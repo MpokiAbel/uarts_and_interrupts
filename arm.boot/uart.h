@@ -1,6 +1,8 @@
 #ifndef UART_H_
 #define UART_H_
 
+#define UART_COUNT 3
+
 #include "vic.h"
 #include "cb.h"
 #include "uart-irqs.h"
