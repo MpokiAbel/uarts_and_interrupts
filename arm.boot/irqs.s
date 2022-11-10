@@ -29,7 +29,7 @@ _isr:
     // back from C...
     // restore all registers, including pc from saved lr
     ldmfd sp!, {r0-r12, pc}^
-
+    .endfunc
 /*
  * Initial setup for handling interrupts on the processor
  * It is about setting up the stack for the interrupt mode.

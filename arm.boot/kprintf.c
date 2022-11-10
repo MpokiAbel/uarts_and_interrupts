@@ -80,7 +80,7 @@ void kprintf(const char *fmt, ...)
 
 void kputchar(int c)
 {
-	uart_send(UART1, c);
+	uart_send(1, c);
 }
 
 /*==================================================================

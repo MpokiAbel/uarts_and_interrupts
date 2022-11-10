@@ -77,9 +77,9 @@ void commandExecution(int uart, int *commandLength, int *commandCursor,
     }
 
     kprintf("%d \n", *index);
-    uart_send(UART1, 27);
-    uart_send(UART1, 91);
-    uart_send(UART1, 71);
+    uart_send(1, 27);
+    uart_send(1, 91);
+    uart_send(1, 71);
     // store the command here+
 
     if (*historyCounter < HISCOUNT)
@@ -181,25 +181,25 @@ void moveCursorBeginErase(int uart)
 void moveCursor(int pos)
 {
   // Move cursor to the required position
-  uart_send(UART0, 27);
-  uart_send(UART0, 91);
+  uart_send(0, 27);
+  uart_send(0, 91);
   if (pos > 9)
   {
     kprintf("%d, ", pos);
-    commandLength_pos(UART0, pos);
+    commandLength_pos(0, pos);
   }
   else
-    uart_send(UART0, 50 + pos);
-  uart_send(UART0, 71);
+    uart_send(0, 50 + pos);
+  uart_send(0, 71);
 }
 
 void moveCursorBegin()
 {
-  uart_send(UART0, 27);
-  uart_send(UART0, 91);
-  uart_send(UART0, 71);
+  uart_send(0, 27);
+  uart_send(0, 91);
+  uart_send(0, 71);
 
-  uart_send(UART0, '>');
+  uart_send(0, '>');
 }
 
 void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandLength, int *commandCursor,
@@ -289,7 +289,7 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
         uart_send(uart, 75);
 
         // Print the command
-        uart_send_string(UART0, tempArray);
+        uart_send_string(0, tempArray);
 
         // Move cursor to the required position
         moveCursor(*commandCursor);
@@ -319,10 +319,10 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
     uart_send(uart, 91);
     uart_send(uart, 75);
 
-    uart_send(UART1, 27);
-    uart_send(UART1, 91);
-    uart_send(UART1, 49);
-    uart_send(UART1, 71);
+    uart_send(1, 27);
+    uart_send(1, 91);
+    uart_send(1, 49);
+    uart_send(1, 71);
 
     if (*commandCursor < *commandLength)
     {
@@ -344,7 +344,7 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
       moveCursorBegin();
 
       // Print the command
-      uart_send_string(UART0, command);
+      uart_send_string(0, command);
 
       // Move cursor to the required position
       moveCursor(*commandCursor);
@@ -401,7 +401,7 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
     moveCursorBegin();
 
     // Print the command
-    uart_send_string(UART0, command);
+    uart_send_string(0, command);
 
     // Move cursor to the required position
     moveCursor(*commandCursor);
@@ -433,15 +433,15 @@ void _start()
   historyCounter = &d;
   historyFull = &e;
 
-  uart_clear(UART0);
-  uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
+  uart_clear(0);
+  uart_send_string(0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
 
-  uart_send(UART0, '>');
+  uart_send(0, '>');
 
   while (1)
   {
     unsigned char c;
-    while (1 == uart_receive(UART0, &c))
+    while (1 == uart_receive(0, &c))
     {
       // friendly reminder that you are polling and therefore spinning...
       // not good for the planet! But until we introduce interrupts,
@@ -449,10 +449,10 @@ void _start()
       // // this annoying code ;-)
       // count++;
       // if (count > 10000000) {
-      //   uart_send_string(UART0, "\n\rZzzz....\n\r");
+      //   uart_send_string(0, "\n\rZzzz....\n\r");
       //   count = 0;
       // }
-      uart_commandline(&c, UART0, UpDownMove,
+      uart_commandline(&c, 0, UpDownMove,
                        commandLength, commandCursor, historyCounter,
                        historyFull, escapeSeq, command);
 

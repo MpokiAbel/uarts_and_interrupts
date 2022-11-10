@@ -12,29 +12,21 @@ struct cb txcb[UART_COUNT];
 
 int uart_receive(int uart, unsigned char *s)
 {
-  // unsigned short *uart_fr = (unsigned short *)(uart + UART_FR);
-  // unsigned short *uart_dr = (unsigned short *)(uart + UART_DR);
-  // if (*uart_fr & UART_RXFE)
-  //   return 0;
-  // *s = (*uart_dr & 0xff);
-
-  // return 1;
-
   int value;
 
   switch (uart)
   {
   case 0:
-    value = cb_get(&rxcb0, s);
+    value = cb_get(&rxcb[0], s);
     break;
   case 1:
-    value = cb_get(&rxcb1, s);
+    value = cb_get(&rxcb[1], s);
     break;
   case 2:
-    value = cb_get(&rxcb2, s);
+    value = cb_get(&rxcb[2], s);
     break;
   case 3:
-    value = cb_get(&rxcb3, s);
+    value = cb_get(&rxcb[3], s);
     break;
   }
 
@@ -48,25 +40,19 @@ int uart_receive(int uart, unsigned char *s)
  */
 void uart_send(int uart, unsigned char s)
 {
-  // unsigned short *uart_fr = (unsigned short *)(uart + UART_FR);
-  // unsigned short *uart_dr = (unsigned short *)(uart + UART_DR);
-  // while (*uart_fr & UART_TXFF)
-  //   ;
-  // *uart_dr = s;
-
   switch (uart)
   {
   case 0:
-    cb_put(&txcb0, s);
+    cb_put(&txcb[0], s);
     break;
   case 1:
-    cb_put(&txcb1, s);
+    cb_put(&txcb[1], s);
     break;
   case 2:
-    cb_put(&txcb2, s);
+    cb_put(&txcb[2], s);
     break;
   case 3:
-    cb_put(&txcb3, s);
+    cb_put(&txcb[3], s);
     break;
   }
 }
@@ -128,12 +114,53 @@ int uart_get_IRQ_rn(int uart_id)
   }
 }
 
-void handler()
+void rx_handler(int uart_id)
 {
+  // fill with the available bytes from the RX FIFO.
+
+  int uart = uart_get_bar(uart_id);
+  unsigned short *uart_fr = (unsigned short *)(uart + UART_FR);
+  unsigned short *uart_dr = (unsigned short *)(uart + UART_DR);
+  while (1)
+  {
+    if ((*uart_fr & UART_RXFE) || cb_put(&rxcb[uart_id], (*uart_dr & 0xff)) != -1)
+      break;
+  }
+}
+void tx_handler(int uart_id)
+{
+  // that the handler of the TX interrupt will empty, writing the bytes to the TX FIFO, when there is room to do so.
+  int uart = uart_get_bar(uart_id);
+  unsigned short *uart_fr = (unsigned short *)(uart + UART_FR);
+  unsigned short *uart_dr = (unsigned short *)(uart + UART_DR);
+  while (1)
+  {
+    if ((*uart_fr & UART_TXFF) || cb_get(&txcb[uart_id], uart_dr) != -1)
+      break;
+  }
+}
+
+void handler(void *cookie)
+{
+
+  int uart_bar = uart_get_bar((int)cookie);
+  if (*(uint16_t *)(UART_MIS + uart_bar) & UART_MIS_RXMIS)
+  {
+    rx_handler((int)cookie);
+  }
+  else if (*(uint16_t *)(UART_MIS + uart_bar) & UART_MIS_TXMIS)
+  {
+    tx_handler((int)cookie);
+  }
+  else if (*(uint16_t *)(UART_MIS + uart_bar) & UART_MIS_RTMIS)
+  {
+    rx_handler((int)cookie);
+  }
 }
 
 void uart_init()
 {
+  vic_setup();
   // Enable FIFO queues, both rx-queue and tx-queue.
 
   for (int uart_id = 0; uart_id < UART_COUNT; uart_id++)
@@ -147,29 +174,16 @@ void uart_init()
     cb_init(&rxcb[uart_id]);
     cb_init(&txcb[uart_id]);
 
+    // Provide the handler for the interrupt at a specific handler position
+    int irq_rn = uart_get_IRQ_rn(uart_id);
+    vic_irq_enable(irq_rn, handler, (void *)uart_id);
+
     // set the Interrupt Mask Set/Clear Register to 1 to allow interrupt
     uint16_t imsc = *(uint16_t *)(uart_bar + UART_IMSC);
     imsc = imsc | UART_IMSC_RXIM | UART_IMSC_TXIM | UART_IMSC_RTIM;
     *(uint16_t *)(uart_bar + UART_IMSC) = imsc;
-
-    // Provide the handler for the interrupt
-    int irq_rn = uart_get_IRQ_rn(uart_id);
-    vic_irq_enable(irq_rn, handler, (void *)uart_id);
-    
-    }
-
-  vic_setup();
+  }
   vic_enable();
-}
-
-void rx_handler()
-{
-  // fill with the available bytes from the RX FIFO.
-}
-void tx_handler()
-{
-  // that the handler of the TX interrupt
-  // will empty, writing the bytes to the TX FIFO, when there is room to do so.
 }
 
 void uart_clear(int uart)
