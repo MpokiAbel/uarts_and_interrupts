@@ -26,3 +26,11 @@ _reset:
 _halt:
 	b	_halt
 
+.global _isr
+_isr:
+    sub lr,lr,#4 
+    stmfd sp!, {r0-r12, lr}
+    bl isr
+    ldmfd sp!, {r0-r12, pc}^
+    
+

@@ -18,18 +18,6 @@
     .equ    CPSR_IRQ_FLAG,         0x80      /* when set, IRQs are disabled, at the core level */
     .equ    CPSR_FIQ_FLAG,         0x40      /* when set, FIQs are disabled, at the core level */
 
-.global _isr
-	.func _isr
-_isr:
-    sub lr,lr,#4 // adjust return address (Cortex-A8)
-    // save registers with link register last
-    stmfd sp!, {r0-r12, lr}
-    // now call the C function interrupt_service_routine
-    bl isr
-    // back from C...
-    // restore all registers, including pc from saved lr
-    ldmfd sp!, {r0-r12, pc}^
-    .endfunc
 /*
  * Initial setup for handling interrupts on the processor
  * It is about setting up the stack for the interrupt mode.

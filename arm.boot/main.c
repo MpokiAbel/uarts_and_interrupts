@@ -435,7 +435,6 @@ void _start()
 
   uart_clear(0);
   uart_send_string(0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
-
   uart_send(0, '>');
 
   while (1)
@@ -455,10 +454,7 @@ void _start()
       uart_commandline(&c, 0, UpDownMove,
                        commandLength, commandCursor, historyCounter,
                        historyFull, escapeSeq, command);
-
-      kprintf("%x, %d \n \r", c, c);
     }
-
     wfi();
   }
 }
