@@ -454,6 +454,7 @@ void _start()
       uart_commandline(&c, 0, UpDownMove,
                        commandLength, commandCursor, historyCounter,
                        historyFull, escapeSeq, command);
+      kprintf("%x", c);
     }
     wfi();
   }

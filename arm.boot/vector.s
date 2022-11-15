@@ -47,4 +47,3 @@ _fiq_handler:
 	b _halt
 _irq_handler:
 	b _isr
-
