@@ -48,11 +48,17 @@ void tx_handler(int uart_id)
   unsigned short *uart_dr = (unsigned short *)(uart + UART_DR);
   while (1)
   {
-    if ((*uart_fr & UART_TXFF) || cb_get(&txcb[uart_id], uart_dr) != -1)
+    if ((*uart_fr & UART_TXFF) || cb_get(&txcb[uart_id], uart_dr) == -1)
+    {
+
+      uint16_t icr = *(uint16_t *)(uart + UART_ICR);
+      icr = icr | UART_ICR_TXIC;
+      *(uint16_t *)(uart + UART_ICR) = icr;
+
       break;
+    }
   }
 }
-
 /**
  * Receive a character from the given uart, this is a non-blocking call.
  * Returns 0 if there are no character available.
@@ -61,8 +67,7 @@ void tx_handler(int uart_id)
 
 int uart_receive(int uart, unsigned char *s)
 {
-  int value = cb_get(&rxcb[0], s);
-  return value + 1;
+  return cb_get(&rxcb[0], s) + 1;
 }
 
 /**
@@ -126,8 +131,6 @@ void handler(void *cookie)
   {
     rx_handler((int)cookie);
   }
-
-  // rx_handler((int)cookie);
 }
 
 void uart_init()
@@ -156,7 +159,7 @@ void uart_init()
 
     // set the Interrupt Mask Set/Clear Register to 1 to allow interrupts to be triggered
     uint16_t imsc = *(uint16_t *)(uart_bar + UART_IMSC);
-    imsc = imsc | UART_IMSC_RXIM | UART_IMSC_RTIM;
+    imsc = imsc | UART_IMSC_RXIM | UART_IMSC_RTIM | UART_IMSC_TXIM;
     *(uint16_t *)(uart_bar + UART_IMSC) = imsc;
   }
 }
