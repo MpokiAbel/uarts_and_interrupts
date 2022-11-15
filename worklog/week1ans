@@ -1,4 +1,30 @@
 The program can be run and compile with both bords :VAP & VPB
 
-The bss section,is the section in memory which is used to allocate memory for uninitalized variable,
-it is reset to zero to prevent any uninitialized varibles to have some other randon value.
+The linker script defines and entry point for the code and different sections of the memory map like bss, stack and data.
+
+The bss section,is the section in memory which is used to allocate memory for uninitalized variable.
+
+It is reset to zero to prevent any uninitialized varibles to have some other randon value.
+
+The constraint comes from how the assembly was written in reset.s to zero the bss section. Why? Because the assembly write 4 registers at a time, each of 32bits, so 4*4-Bytes = 16 bytes.
+
+The periodic "Zzzz..." was displayed when there was no output read from the UART and it is printed every 10s which means we are polling ie continuously checking whether there is a byte in the UART FIFO
+
+_stack_top is defined to represents the top of the stack and it is defined at the end because the stack is growing downwards.
+
+If many functions were to be called in c the stack would overflow hence program crashes
+
+To verify that the program runs safely 
+
+a=>61
+b=>62
+A=>41
+B=>42
+left=>1b5b44
+right=>1b5b43
+up=>1b5b41
+down=>1b5b42
+delete=>1b5b337e
+backspace=>7f
+
+When the arrows are pressed,it enters a control sequence the followed by terminating character which determines what is to be done after this sequence (command sequence introducer)
