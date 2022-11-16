@@ -28,7 +28,7 @@ int stringCompare(char a[], char b[])
 void stringParse(int start, unsigned char *cmd, int *endIndex, int *commandLength, unsigned char *command)
 {
   int i = start;
-  kprintf("%d", i);
+  // kprintf("%d", i);
   while (i < *commandLength)
   {
     if (*(command + i) == ' ')
@@ -76,7 +76,7 @@ void commandExecution(int uart, int *commandLength, int *commandCursor,
       uart_send_string(uart, temp);
     }
 
-    kprintf("%d \n", *index);
+    // kprintf("%d \n", *index);
     uart_send(1, 27);
     uart_send(1, 91);
     uart_send(1, 71);
@@ -146,7 +146,7 @@ void *commandLength_pos(int uart, int pos)
   for (int i = 0; i < count; i++)
   {
     uart_send(uart, 48 + array[i]);
-    kprintf("%d ---", array[i]);
+    // kprintf("%d ---", array[i]);
   }
 }
 
@@ -183,7 +183,8 @@ void moveCursor(int pos)
   // Move cursor to the required position
   uart_send(0, 27);
   uart_send(0, 91);
-  if (pos > 9)
+  kprintf("%d, ", pos);
+  if (pos > 7)
   {
     kprintf("%d, ", pos);
     commandLength_pos(0, pos);
@@ -283,7 +284,7 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
         (*commandLength)--;
         *(command + *commandLength) = '\0';
 
-        // moveCursorBeginErase(uart);
+        // Erase in line from the cursor to right
         uart_send(uart, 27);
         uart_send(uart, 91);
         uart_send(uart, 75);
@@ -313,21 +314,26 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
   }
   else if (options == 127) // backspace key
   {
-    if (*commandCursor > 0)
-      uart_send(uart, 8); // Backspace
-    uart_send(uart, 27);
-    uart_send(uart, 91);
-    uart_send(uart, 75);
-
-    uart_send(1, 27);
-    uart_send(1, 91);
-    uart_send(1, 49);
-    uart_send(1, 71);
-
-    if (*commandCursor < *commandLength)
+    if (*commandCursor > 0 && *commandCursor == *commandLength)
     {
-      unsigned char tempArray[*commandLength - *commandCursor];
-      for (int i = 0; i < *commandLength - *commandCursor; i++)
+      uart_send(uart, 8); // Backspace
+      uart_send(uart, 27);
+      uart_send(uart, 91);
+      uart_send(uart, 75);
+
+      (*commandLength)--;
+      (*commandCursor)--;
+    }
+    else if (*commandCursor<*commandLength && * commandCursor> 0)
+    {
+      uart_send(uart, 8); // Backspace
+      uart_send(uart, 27);
+      uart_send(uart, 91);
+      uart_send(uart, 75);
+
+      int arraySize = *commandLength - *commandCursor;
+      unsigned char tempArray[arraySize + 1];
+      for (int i = 0; i < arraySize; i++)
       {
         tempArray[i] = *(command + *commandCursor + i);
       }
@@ -339,24 +345,13 @@ void uart_commandline(unsigned char *s, int uart, int *UpDownMove, int *commandL
       (*commandLength)--;
       (*commandCursor)--;
       *(command + *commandLength) = '\0';
-
-      // Move Cursor to the beginning of a live
-      moveCursorBegin();
+      tempArray[arraySize] = '\0';
 
       // Print the command
-      uart_send_string(0, command);
+      uart_send_string(0, tempArray);
 
       // Move cursor to the required position
       moveCursor(*commandCursor);
-
-      *commandLength = (*commandLength) + 1;
-      *commandCursor = (*commandCursor) + 1;
-    }
-
-    if (*commandCursor > 0)
-    {
-      (*commandLength)--;
-      (*commandCursor)--;
     }
   }
   else if (options == 13)
@@ -454,7 +449,7 @@ void _start()
       uart_commandline(&c, 0, UpDownMove,
                        commandLength, commandCursor, historyCounter,
                        historyFull, escapeSeq, command);
-      kprintf("%x", c);
+      // kprintf("%x", c);
     }
     wfi();
   }
