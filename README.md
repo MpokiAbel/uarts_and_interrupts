@@ -1,7 +1,8 @@
 # GIT BRANCHES 
 There are three branches i worked on which are: master,week1 and week2.
-master branch contains the most recent work,week2 contains the work for week 2
-and week1 contains work only for the first part regarding the console.
+master branch contains the most recent work which is to be marked, week2
+contains the work for week 2 and week1 contains work only for the first
+part regarding the console.
 
 # How to compile
 Enter "make run" to run the program in the arm.boot directory and 
