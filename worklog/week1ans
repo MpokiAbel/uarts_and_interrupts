@@ -1,4 +1,4 @@
-The program can be run and compile with both bords :VAP & VPB
+The program can be run and compile with both boards :VAP & VPB
 
 The linker script defines and entry point for the code and different sections of the memory map like bss, stack and data.
 
@@ -12,9 +12,11 @@ The periodic "Zzzz..." was displayed when there was no output read from the UART
 
 _stack_top is defined to represents the top of the stack and it is defined at the end because the stack is growing downwards.
 
+To verify that the stack work properly is by defining a function which loads all the local varibles to the stack
+
 If many functions were to be called in c the stack would overflow hence program crashes
 
-To verify that the program runs safely 
+We can check the address range of varibles initialized in the function whether they are within the range of address for the stack 
 
 a=>61
 b=>62

@@ -29,7 +29,6 @@ int uart_get_bar(int uart_id)
 void rx_handler(int uart_id)
 {
   // fill with the available bytes from the RX FIFO.
-
   int uart = uart_get_bar(uart_id);
   uint8_t byte;
   unsigned short *uart_fr = (unsigned short *)(uart + UART_FR);
@@ -50,7 +49,6 @@ void tx_handler(int uart_id)
   {
     if ((*uart_fr & UART_TXFF) || cb_get(&txcb[uart_id], uart_dr) == -1)
     {
-
       uint16_t icr = *(uint16_t *)(uart + UART_ICR);
       icr = icr | UART_ICR_TXIC;
       *(uint16_t *)(uart + UART_ICR) = icr;
